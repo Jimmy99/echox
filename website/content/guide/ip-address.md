@@ -6,18 +6,18 @@ description = "IP address handling in Echo"
   parent = "guide"
 +++
 
-IP address plays fundamental role in HTTP; it's used for access control, auditting, geo-based access analysis and more.
-Echo provides handy method [`Context#RealIP()`](https://godoc.org/github.com/labstack/echo#Context) for that.
+IP address plays a fundamental role in HTTP; it's used for access control, auditing, geo-based access analysis and more.
+Echo provides a handy method [`Context#RealIP()`](https://godoc.org/github.com/labstack/echo#Context) for that.
 
 However, it is not trivial to retrieve the _real_ IP address from requests especially when you put L7 proxies before the application.
 In such situation, _real_ IP needs to be relayed on HTTP layer from proxies to your app, but you must not trust HTTP headers unconditionally.
-Otherwise you might give someone a chance of deceiving you. **A security risk!**
+Otherwise you might give someone a chance to deceive you. **A security risk!**
 
-To retrieve IP address reliably/securely, you must let your application be aware of the entire architecture of your infrastructrure.
+To retrieve the IP address reliably/securely, you must let your application be aware of the entire architecture of your infrastructrure.
 In Echo, this can be done by configuring `Echo#IPExtractor` appropriately.
 This guides show you why and how.
 
-> Note: if you dont' set `Echo#IPExtractor` explicitly, Echo fallback to legacy behavior, which is not a good choice.
+> Note: if you dont' set `Echo#IPExtractor` explicitly, Echo falls back to legacy behavior, which is not a good choice.
 
 Let's start from two questions to know the right direction:
 
@@ -27,8 +27,8 @@ Let's start from two questions to know the right direction:
 
 ## Case 1. With no proxy
 
-If you put no proxy (e.g.: directory facing to the internet), all you need to (and have to) see is IP address from network layer.
-Any HTTP header is untrustable because the clients have full control what headers to be set.
+If you put no proxy (e.g.: directory facing to the internet), all you need to (and have to) see is the IP address from the network layer.
+Any HTTP header is untrustable because the clients have full control over what headers are to be set.
 
 In this case, use `echo.ExtractIPDirect()`.
 
@@ -58,7 +58,7 @@ XFF:  "x"                   "x, a"                  "x, a, b"
                                                     ↑ What your app will see
 ```
 
-In this case, use **first _untrustable_ IP reading from right**. Never use first one reading from left, as it is configurable by client. Here "trustable" means "you are sure the IP address belongs to your infrastructure". In above example, if `b` and `c` are trustable, the IP address of the client is `a` for both cases, never be `x`.
+In this case, use **first _untrustable_ IP reading from right**. Never use first one reading from left, as it is configurable by client. Here "trustable" means "you are sure the IP address belongs to your infrastructure". In the above example, if `b` and `c` are trustable, the IP address of the client is `a` for both cases, and will never be `x`.
 
 In Echo, use `ExtractIPFromXFFHeader(...TrustOption)`.
 
@@ -94,11 +94,11 @@ Again, it trusts internal IP addresses by default (loopback, link-local unicast,
 - Ref: https://godoc.org/github.com/labstack/echo#TrustOption
 
 > **Never forget** to configure the outermost proxy (i.e.; at the edge of your infrastructure) **not to pass through incoming headers**.
-> Otherwise there is a chance of fraud, as it is what clients can control.
+> Otherwise there is a chance of fraud, as it can be controlled by clients.
 
 ## About default behavior
 
 In default behavior, Echo sees all of first XFF header, X-Real-IP header and IP from network layer.
 
 As you might already notice, after reading this article, this is not good.
-Sole reason this is default is just backward compatibility.
+The sole reason that this is the default behavior is just for backward compatibility.
